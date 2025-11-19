@@ -262,7 +262,7 @@
         // Call backend to get JWT token
         debugLog('Calling backend API...');
         
-        const response = await fetch('https://segment-intercom-backend.onrender.com', {
+        const response = await fetch('https://segment-intercom-backend.onrender.com/api/generate-intercom-jwt', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
