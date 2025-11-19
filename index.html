@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intercom Native Integration</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      display: block;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      display: block;
+    }
+
+    .status.loading {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+      display: block;
+    }
+
+    .info-box {
+      background: #e7f3ff;
+      border-left: 4px solid #2196F3;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+
+    .info-box h3 {
+      color: #1976D2;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .info-box p {
+      color: #555;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .debug-console {
+      margin-top: 30px;
+      padding: 15px;
+      background: #1e1e1e;
+      color: #00ff00;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .debug-console.show {
+      display: block;
+    }
+
+    .debug-entry {
+      margin-bottom: 5px;
+      padding: 3px 0;
+    }
+
+    .toggle-debug {
+      margin-top: 15px;
+      padding: 8px 16px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Intercom Native Integration</h1>
+    <p class="subtitle">Direct integration with JWT authentication - No Segment required</p>
+
+    <div class="info-box">
+      <h3>ℹ️ How it works</h3>
+      <p>This page integrates directly with Intercom using JWT tokens for Identity Verification. Your identity is securely verified on the backend.</p>
+    </div>
+
+    <form id="signup-form">
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" placeholder="Enter your name" required>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="Enter your email" required>
+      </div>
+
+      <button type="submit" id="submit-btn">Authenticate with Intercom</button>
+    </form>
+
+    <div id="status" class="status"></div>
+
+    <button class="toggle-debug" onclick="toggleDebug()">Toggle Debug Console</button>
+    <div id="debug-console" class="debug-console"></div>
+  </div>
+
+  <!-- Intercom Widget Loader -->
+  <script>
+    (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/okb0ngs6';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+  </script>
+
+  <script>
+    // Debug console helper
+    function debugLog(message, data = null) {
+      const console = document.getElementById('debug-console');
+      const entry = document.createElement('div');
+      entry.className = 'debug-entry';
+      const timestamp = new Date().toLocaleTimeString();
+      entry.textContent = `[${timestamp}] ${message}`;
+      if (data) {
+        entry.textContent += ` | ${JSON.stringify(data)}`;
+      }
+      console.insertBefore(entry, console.firstChild);
+      window.console.log(message, data);
+    }
+
+    function toggleDebug() {
+      const debugConsole = document.getElementById('debug-console');
+      debugConsole.classList.toggle('show');
+    }
+
+    function showStatus(message, type) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = `status ${type}`;
+    }
+
+    // Form submission handler
+    document.getElementById('signup-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const submitBtn = document.getElementById('submit-btn');
+
+      debugLog('=== Starting Intercom Authentication ===');
+      debugLog('Name:', name);
+      debugLog('Email:', email);
+
+      // Disable button and show loading
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Authenticating...';
+      showStatus('Generating JWT token...', 'loading');
+
+      try {
+        // Call backend to get JWT token
+        debugLog('Calling backend API...');
+        
+        const response = await fetch('https://segment-test-backend.onrender.com/api/generate-intercom-jwt', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            userId: email,  // Use email as userId (no special characters)
+            email: email,
+            name: name
+          })
+        });
+
+        debugLog('Response status:', response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Server error: ${errorText}`);
+        }
+
+        const data = await response.json();
+        debugLog('JWT Token received:', data.jwtToken ? 'Yes' : 'No');
+        debugLog('User ID:', data.userId);
+
+        // Decode JWT for debugging
+        try {
+          const jwtParts = data.jwtToken.split('.');
+          const payload = JSON.parse(atob(jwtParts[1]));
+          debugLog('JWT Payload:', payload);
+          debugLog('Match check:', email === payload.user_id ? '✅ MATCH' : '❌ MISMATCH');
+        } catch (e) {
+          debugLog('Could not decode JWT:', e.message);
+        }
+
+        showStatus('JWT token received. Booting Intercom...', 'loading');
+
+        // Boot Intercom with JWT
+        debugLog('Booting Intercom...');
+        
+        window.Intercom('boot', {
+          api_base: "https://api-iam.intercom.io",
+          app_id: 'okb0ngs6',
+          user_id: email,
+          name: name,
+          email: email,
+          user_hash: data.jwtToken,
+          created_at: Math.floor(Date.now() / 1000)
+        });
+
+        debugLog('✅ Intercom boot called successfully');
+        showStatus('✅ Success! Intercom authenticated with JWT. The messenger should appear in the bottom right.', 'success');
+        
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Authenticate with Intercom';
+
+      } catch (error) {
+        debugLog('❌ Error occurred:', error.message);
+        console.error('Error:', error);
+        showStatus(`❌ Error: ${error.message}`, 'error');
+        
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Authenticate with Intercom';
+      }
+    });
+
+    // Log when Intercom loads
+    debugLog('Page loaded, Intercom widget loading...');
+  </script>
+</body>
+</html>
