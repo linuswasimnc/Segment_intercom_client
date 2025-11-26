@@ -146,6 +146,26 @@
       line-height: 1.5;
     }
 
+    .success-box {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+
+    .success-box h3 {
+      color: #155724;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .success-box p {
+      color: #155724;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
     .debug-console {
       margin-top: 30px;
       padding: 15px;
@@ -178,41 +198,21 @@
       font-size: 12px;
       cursor: pointer;
     }
-
-    .warning-box {
-      background: #fff3cd;
-      border-left: 4px solid #ffc107;
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 4px;
-    }
-
-    .warning-box h3 {
-      color: #856404;
-      font-size: 16px;
-      margin-bottom: 8px;
-    }
-
-    .warning-box p {
-      color: #856404;
-      font-size: 14px;
-      line-height: 1.5;
-    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>🚀 Intercom Native Integration</h1>
-    <p class="subtitle">Direct integration with JWT authentication - No Segment required</p>
+    <p class="subtitle">JWT-First Approach - Intercom loads AFTER authentication</p>
+
+    <div class="success-box">
+      <h3>✅ Dynamic Loading Implementation</h3>
+      <p>Intercom widget will only load AFTER you authenticate. This ensures the JWT is set in window.intercomSettings before the widget initializes.</p>
+    </div>
 
     <div class="info-box">
       <h3>ℹ️ How it works</h3>
-      <p>This page integrates directly with Intercom using JWT tokens for Identity Verification. All user data (email, name) is securely encoded in the JWT token.</p>
-    </div>
-
-    <div class="warning-box">
-      <h3>⚠️ Backend Update Required</h3>
-      <p>Make sure your backend JWT payload includes: <code>user_id</code>, <code>email</code>, and <code>name</code></p>
+      <p>1. You submit the form<br>2. Backend generates JWT token<br>3. JWT is set in window.intercomSettings<br>4. Intercom widget loads with JWT already configured</p>
     </div>
 
     <form id="signup-form">
@@ -235,20 +235,12 @@
     <div id="debug-console" class="debug-console"></div>
   </div>
 
-  <!-- Intercom Settings - Must be set BEFORE the loader -->
-  <script>
-    var APP_ID = 'okb0ngs6';
-    window.intercomSettings = {
-      api_base: "https://api-iam.intercom.io",
-      app_id: APP_ID
-    };
-  </script>
-
-  <!-- Intercom Widget Loader -->
-  <script>
-(function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/okb0ngs6';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();  </script>
+  <!-- NO Intercom loader here - we'll load it dynamically after getting JWT -->
 
   <script>
+    const APP_ID = 'okb0ngs6';
+    let intercomLoaded = false;
+
     // Debug console helper
     function debugLog(message, data = null) {
       const console = document.getElementById('debug-console');
@@ -272,6 +264,55 @@
       const status = document.getElementById('status');
       status.textContent = message;
       status.className = `status ${type}`;
+    }
+
+    // Function to dynamically load Intercom widget
+    function loadIntercomWidget(jwtToken) {
+      debugLog('=== Loading Intercom Widget ===');
+      
+      // Set window.intercomSettings BEFORE loading the script
+      window.intercomSettings = {
+        api_base: "https://api-iam.intercom.io",
+        app_id: APP_ID,
+        intercom_user_jwt: jwtToken
+      };
+      
+      debugLog('✅ window.intercomSettings configured with JWT');
+      debugLog('Settings:', window.intercomSettings);
+
+      // Now load the Intercom widget script
+      (function(){
+        var w=window;
+        var ic=w.Intercom;
+        if(typeof ic==="function"){
+          ic('reattach_activator');
+          ic('update',w.intercomSettings);
+        } else {
+          var d=document;
+          var i=function(){i.c(arguments);};
+          i.q=[];
+          i.c=function(args){i.q.push(args);};
+          w.Intercom=i;
+          var l=function(){
+            var s=d.createElement('script');
+            s.type='text/javascript';
+            s.async=true;
+            s.src='https://widget.intercom.io/widget/' + APP_ID;
+            var x=d.getElementsByTagName('script')[0];
+            x.parentNode.insertBefore(s,x);
+            debugLog('✅ Intercom widget script injected');
+          };
+          if(document.readyState==='complete'){
+            l();
+          } else if(w.attachEvent){
+            w.attachEvent('onload',l);
+          } else {
+            w.addEventListener('load',l,false);
+          }
+        }
+      })();
+
+      intercomLoaded = true;
     }
 
     // Form submission handler
@@ -316,36 +357,29 @@
 
         const data = await response.json();
         debugLog('JWT Token received:', data.jwtToken ? 'Yes' : 'No');
-        debugLog('User ID:', data.userId);
 
         // Decode JWT for debugging
         try {
           const jwtParts = data.jwtToken.split('.');
           const payload = JSON.parse(atob(jwtParts[1]));
           debugLog('JWT Payload:', payload);
-          debugLog('Payload contains name?', payload.name ? 'Yes' : 'No (UPDATE BACKEND!)');
         } catch (e) {
           debugLog('Could not decode JWT:', e.message);
         }
 
-        showStatus('JWT token received. Booting Intercom...', 'loading');
+        showStatus('JWT received. Loading Intercom widget...', 'loading');
 
-        // Boot Intercom with ONLY the JWT token
-        // All user data (user_id, email, name) should be in the JWT payload
-        debugLog('Booting Intercom with JWT-only authentication...');
-        
-        window.Intercom('boot', {
-          api_base: "https://api-iam.intercom.io",
-          app_id: 'okb0ngs6',
-          intercom_user_jwt: data.jwtToken,
-          session_duration: 86400000  // 1 day session
-          // ✅ NO user_id, email, name, or created_at here
-          // All user info comes from the JWT payload
-        });
-
-        debugLog('✅ Intercom boot called successfully (JWT-only mode)');
-        debugLog('✅ Check network tab - intercom_user_jwt should be TOP-LEVEL, not in user_data');
-        showStatus('✅ Success! Intercom authenticated with JWT. The messenger should appear in the bottom right.', 'success');
+        // Load Intercom widget with JWT
+        if (!intercomLoaded) {
+          loadIntercomWidget(data.jwtToken);
+          debugLog('✅ Intercom widget loading with JWT in window.intercomSettings');
+          showStatus('✅ Success! Intercom is loading with JWT authentication. Check network tab - intercom_user_jwt should be TOP-LEVEL!', 'success');
+        } else {
+          // If already loaded, update it
+          window.Intercom('update', window.intercomSettings);
+          debugLog('✅ Intercom widget updated');
+          showStatus('✅ Intercom updated with new JWT!', 'success');
+        }
         
         // Reset button
         submitBtn.disabled = false;
@@ -362,8 +396,8 @@
       }
     });
 
-    // Log when Intercom loads
-    debugLog('Page loaded, Intercom widget loading...');
+    // Log page load
+    debugLog('✅ Page loaded. Intercom will load AFTER you authenticate.');
   </script>
 </body>
 </html>
