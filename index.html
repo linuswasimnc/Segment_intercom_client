@@ -178,6 +178,26 @@
       font-size: 12px;
       cursor: pointer;
     }
+
+    .warning-box {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+
+    .warning-box h3 {
+      color: #856404;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .warning-box p {
+      color: #856404;
+      font-size: 14px;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -187,7 +207,12 @@
 
     <div class="info-box">
       <h3>ℹ️ How it works</h3>
-      <p>This page integrates directly with Intercom using JWT tokens for Identity Verification. Your identity is securely verified on the backend.</p>
+      <p>This page integrates directly with Intercom using JWT tokens for Identity Verification. All user data (email, name) is securely encoded in the JWT token.</p>
+    </div>
+
+    <div class="warning-box">
+      <h3>⚠️ Backend Update Required</h3>
+      <p>Make sure your backend JWT payload includes: <code>user_id</code>, <code>email</code>, and <code>name</code></p>
     </div>
 
     <form id="signup-form">
@@ -212,7 +237,7 @@
 
   <!-- Intercom Widget Loader -->
   <script>
-    (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/vsd394an';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+    (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/okb0ngs6';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
   </script>
 
   <script>
@@ -268,7 +293,7 @@
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            userId: email,  // Use email as userId (no special characters)
+            userId: email,
             email: email,
             name: name
           })
@@ -290,27 +315,28 @@
           const jwtParts = data.jwtToken.split('.');
           const payload = JSON.parse(atob(jwtParts[1]));
           debugLog('JWT Payload:', payload);
-          debugLog('Match check:', email === payload.user_id ? '✅ MATCH' : '❌ MISMATCH');
+          debugLog('Payload contains name?', payload.name ? 'Yes' : 'No (UPDATE BACKEND!)');
         } catch (e) {
           debugLog('Could not decode JWT:', e.message);
         }
 
         showStatus('JWT token received. Booting Intercom...', 'loading');
 
-        // Boot Intercom with JWT
-        debugLog('Booting Intercom...');
+        // Boot Intercom with ONLY the JWT token
+        // All user data (user_id, email, name) should be in the JWT payload
+        debugLog('Booting Intercom with JWT-only authentication...');
         
         window.Intercom('boot', {
           api_base: "https://api-iam.intercom.io",
           app_id: 'okb0ngs6',
-          user_id: email,
-          name: name,
-          email: email,
           intercom_user_jwt: data.jwtToken,
-          created_at: Math.floor(Date.now() / 1000)
+          session_duration: 86400000  // 1 day session
+          // ✅ NO user_id, email, name, or created_at here
+          // All user info comes from the JWT payload
         });
 
-        debugLog('✅ Intercom boot called successfully');
+        debugLog('✅ Intercom boot called successfully (JWT-only mode)');
+        debugLog('✅ Check network tab - intercom_user_jwt should be TOP-LEVEL, not in user_data');
         showStatus('✅ Success! Intercom authenticated with JWT. The messenger should appear in the bottom right.', 'success');
         
         // Reset button
