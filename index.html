@@ -237,174 +237,113 @@
 
   <!-- NO Intercom loader here - we'll load it dynamically after getting JWT -->
 
-  <script>
-    /*
-    const APP_ID = 'okb0ngs6';
-    let intercomLoaded = false;
-
-    // Debug console helper
-    function debugLog(message, data = null) {
-      const console = document.getElementById('debug-console');
-      const entry = document.createElement('div');
-      entry.className = 'debug-entry';
-      const timestamp = new Date().toLocaleTimeString();
-      entry.textContent = `[${timestamp}] ${message}`;
-      if (data) {
-        entry.textContent += ` | ${JSON.stringify(data)}`;
-      }
-      console.insertBefore(entry, console.firstChild);
-      window.console.log(message, data);
-    }
-
-    function toggleDebug() {
-      const debugConsole = document.getElementById('debug-console');
-      debugConsole.classList.toggle('show');
-    }
-
-    function showStatus(message, type) {
-      const status = document.getElementById('status');
-      status.textContent = message;
-      status.className = `status ${type}`;
-    }
-
-    // Function to dynamically load Intercom widget
-    function loadIntercomWidget(jwtToken) {
-      debugLog('=== Loading Intercom Widget ===');
-      
-      // Set window.intercomSettings BEFORE loading the script
-      window.intercomSettings = {
-        api_base: "https://api-iam.intercom.io",
-        app_id: APP_ID,
-        intercom_user_jwt: jwtToken
-      };
-      
-      debugLog('✅ window.intercomSettings configured with JWT');
-      debugLog('Settings:', window.intercomSettings);
-
-      // Now load the Intercom widget script
-      (function(){
-        var w=window;
-        var ic=w.Intercom;
-        if(typeof ic==="function"){
-          ic('reattach_activator');
-          ic('update',w.intercomSettings);
-        } else {
-          var d=document;
-          var i=function(){i.c(arguments);};
-          i.q=[];
-          i.c=function(args){i.q.push(args);};
-          w.Intercom=i;
-          var l=function(){
-            var s=d.createElement('script');
-            s.type='text/javascript';
-            s.async=true;
-            s.src='https://widget.intercom.io/widget/' + APP_ID;
-            var x=d.getElementsByTagName('script')[0];
-            x.parentNode.insertBefore(s,x);
-            debugLog('✅ Intercom widget script injected');
+  
+ 
+  <script data-segment-write-key="wxg7hOn5cGSW1uII3AYgF6AAdRfN0CPi">
+    !(function () {
+      var i = "analytics",
+        analytics = (window[i] = window[i] || []);
+      if (!analytics.initialize)
+        if (analytics.invoked)
+          window.console &&
+            console.error &&
+            console.error("Segment snippet included twice.");
+        else {
+          analytics.invoked = !0;
+          analytics.methods = [
+            "trackSubmit",
+            "trackClick",
+            "trackLink",
+            "trackForm",
+            "pageview",
+            "identify",
+            "reset",
+            "group",
+            "track",
+            "ready",
+            "alias",
+            "debug",
+            "page",
+            "screen",
+            "once",
+            "off",
+            "on",
+            "addSourceMiddleware",
+            "addIntegrationMiddleware",
+            "setAnonymousId",
+            "addDestinationMiddleware",
+            "register",
+          ];
+          analytics.factory = function (e) {
+            return function () {
+              if (window[i].initialized)
+                return window[i][e].apply(window[i], arguments);
+              var n = Array.prototype.slice.call(arguments);
+              if (
+                [
+                  "track",
+                  "screen",
+                  "alias",
+                  "group",
+                  "page",
+                  "identify",
+                ].indexOf(e) > -1
+              ) {
+                var c = document.querySelector("link[rel='canonical']");
+                n.push({
+                  __t: "bpc",
+                  c: (c && c.getAttribute("href")) || void 0,
+                  p: location.pathname,
+                  u: location.href,
+                  s: location.search,
+                  t: document.title,
+                  r: document.referrer,
+                });
+              }
+              n.unshift(e);
+              analytics.push(n);
+              return analytics;
+            };
           };
-          if(document.readyState==='complete'){
-            l();
-          } else if(w.attachEvent){
-            w.attachEvent('onload',l);
-          } else {
-            w.addEventListener('load',l,false);
+          for (var n = 0; n < analytics.methods.length; n++) {
+            var key = analytics.methods[n];
+            analytics[key] = analytics.factory(key);
           }
+          analytics._writeKey = document.currentScript.getAttribute("data-segment-write-key");
+
+          var r = document.getElementsByTagName("script")[0];
+          analytics.load = function (key, n) {
+            var t = document.createElement("script");
+            t.type = "text/javascript";
+            t.async = !0;
+            t.setAttribute("data-global-segment-analytics-key", i);
+            t.src =
+              "https://cdn.segment.com/analytics.js/v1/" +
+              key +
+              "/analytics.min.js";
+            r.parentNode.insertBefore(t, r);
+            analytics._loadOptions = n;
+          };
+
+          analytics.loadWithSignals = function (key, n) {
+            window.signalsPluginReady = function(SignalsPlugin) {
+              var signalsPlugin = new SignalsPlugin();
+              analytics.register(signalsPlugin);
+              analytics.load(key, n);
+            };
+            var signalsScript = document.createElement("script");
+            signalsScript.type = "text/javascript";
+            signalsScript.src =
+              "https://cdn.jsdelivr.net/npm/@segment/analytics-signals@latest/dist/umd/analytics-signals.umd.js";
+            signalsScript.async = !0;
+            r.parentNode.insertBefore(signalsScript, r);
+          };
+
+          analytics.loadWithSignals(analytics._writeKey);
+          analytics.page();
         }
-      })();
-
-      intercomLoaded = true;
-    }
-    */
-    !function(){var i="analytics",analytics=window[i]=window[i]||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","screen","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware","register"];analytics.factory=function(e){return function(){if(window[i].initialized)return window[i][e].apply(window[i],arguments);var n=Array.prototype.slice.call(arguments);if(["track","screen","alias","group","page","identify"].indexOf(e)>-1){var c=document.querySelector("link[rel='canonical']");n.push({__t:"bpc",c:c&&c.getAttribute("href")||void 0,p:location.pathname,u:location.href,s:location.search,t:document.title,r:document.referrer})}n.unshift(e);analytics.push(n);return analytics}};for(var n=0;n<analytics.methods.length;n++){var key=analytics.methods[n];analytics[key]=analytics.factory(key)}analytics.load=function(key,n){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-segment-analytics-key",i);t.src="https://cdn.segment.com/analytics.js/v1/" + key + "/analytics.min.js";var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r);analytics._loadOptions=n};analytics._writeKey="wxg7hOn5cGSW1uII3AYgF6AAdRfN0CPi";;analytics.SNIPPET_VERSION="5.2.0";
-  analytics.load("wxg7hOn5cGSW1uII3AYgF6AAdRfN0CPi");
-  analytics.page();
-  }}();
-
-    // Form submission handler
-    document.getElementById('signup-form').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      const name = document.getElementById('name').value;
-      const email = document.getElementById('email').value;
-      const submitBtn = document.getElementById('submit-btn');
-
-      debugLog('=== Starting Intercom Authentication ===');
-      debugLog('Name:', name);
-      debugLog('Email:', email);
-
-      // Disable button and show loading
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Authenticating...';
-      showStatus('Generating JWT token...', 'loading');
-
-      try {
-        // Call backend to get JWT token
-        debugLog('Calling backend API...');
-        
-        const response = await fetch('https://segment-intercom-backend.onrender.com/api/generate-intercom-jwt', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            userId: email,
-            email: email,
-            name: name
-          })
-        });
-
-        debugLog('Response status:', response.status);
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Server error: ${errorText}`);
-        }
-
-        const data = await response.json();
-        debugLog('JWT Token received:', data.jwtToken ? 'Yes' : 'No');
-
-        // Decode JWT for debugging
-        try {
-          const jwtParts = data.jwtToken.split('.');
-          const payload = JSON.parse(atob(jwtParts[1]));
-          debugLog('JWT Payload:', payload);
-        } catch (e) {
-          debugLog('Could not decode JWT:', e.message);
-        }
-
-        showStatus('JWT received. Loading Intercom widget...', 'loading');
-
-        // Load Intercom widget with JWT
-        if (!intercomLoaded) {
-          loadIntercomWidget(data.jwtToken);
-          debugLog('✅ Intercom widget loading with JWT in window.intercomSettings');
-          showStatus('✅ Success! Intercom is loading with JWT authentication. Check network tab - intercom_user_jwt should be TOP-LEVEL!', 'success');
-        } else {
-          // If already loaded, update it
-          window.Intercom('update', window.intercomSettings);
-          debugLog('✅ Intercom widget updated');
-          showStatus('✅ Intercom updated with new JWT!', 'success');
-        }
-        
-        // Reset button
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Authenticate with Intercom';
-
-      } catch (error) {
-        debugLog('❌ Error occurred:', error.message);
-        console.error('Error:', error);
-        showStatus(`❌ Error: ${error.message}`, 'error');
-        
-        // Reset button
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Authenticate with Intercom';
-      }
-    });
-
-    // Log page load
-    debugLog('✅ Page loaded. Intercom will load AFTER you authenticate.');
-    
+    })();
   </script>
+   
 </body>
 </html>
